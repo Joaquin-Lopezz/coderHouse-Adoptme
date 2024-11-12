@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import CustomError from '../services/errors/custom-error.js';
 import { EErrors } from '../services/errors/enum.js';
 import {
@@ -6,7 +7,7 @@ import {
     usersService,
 } from '../services/index.js';
 
-const getAllAdoptions = async (req, res) => {
+const getAllAdoptions = async (req, res,next) => {
     try {
         const result = await adoptionsService.getAll();
         res.send({ status: 'success', payload: result });
@@ -15,9 +16,17 @@ const getAllAdoptions = async (req, res) => {
     }
 };
 
-const getAdoption = async (req, res) => {
+const getAdoption = async (req, res,next) => {
     try {
         const adoptionId = req.params.aid;
+        if (!mongoose.Types.ObjectId.isValid(adoptionId)) {
+            throw CustomError.crearError({
+                nombre: 'ID inválido',
+                causa: `El ID proporcionado (${adoptionId}) no es un ObjectId válido`,
+                mensaje: 'Error al intentar buscar un usuario',
+                codigo: EErrors.BAD_REQUEST,
+            });
+        }
         const adoption = await adoptionsService.getBy({ _id: adoptionId });
         if (!adoption)
             throw CustomError.crearError({
@@ -33,14 +42,30 @@ const getAdoption = async (req, res) => {
     }
 };
 
-const createAdoption = async (req, res) => {
+const createAdoption = async (req, res,next) => {
     try {
         const { uid, pid } = req.params;
+        if (!mongoose.Types.ObjectId.isValid(uid)) {
+            throw CustomError.crearError({
+                nombre: 'ID inválido',
+                causa: `El ID proporcionado (${uid}) no es un ObjectId válido`,
+                mensaje: 'Error al intentar buscar un usuario',
+                codigo: EErrors.BAD_REQUEST,
+            });
+        }
+        if (!mongoose.Types.ObjectId.isValid(pid)) {
+            throw CustomError.crearError({
+                nombre: 'ID inválido',
+                causa: `El ID proporcionado (${pid}) no es un ObjectId válido`,
+                mensaje: 'Error al intentar buscar un usuario',
+                codigo: EErrors.BAD_REQUEST,
+            });
+        }
         const user = await usersService.getUserById(uid);
         if (!user)
             throw CustomError.crearError({
                 nombre: 'usuario no encontrado',
-                causa: `no existe usuario con el mail :'${uid}' `,
+                causa: `no existe usuario con el Id :'${uid}' `,
                 mensaje: 'error en crear adopcion',
                 codigo: EErrors.NOT_FOUND,
             });

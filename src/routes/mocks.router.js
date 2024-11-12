@@ -28,17 +28,23 @@ mocksRouter.get('/mockingUsers', async (req, res, next) => {
 
 mocksRouter.post('/generateData', async (req, res, next) => {
     try {
+        let dataUser = [];
+        let dataPet = [];
         const { users, pets } = req.body;
         for (let i = 0; i < users; i++) {
             const usuario = await generarUsuarios();
-            await usersService.create(usuario);
+
+            const data = await usersService.create(usuario);
+            dataUser.push(data);
         }
 
         for (let i = 0; i < pets; i++) {
             const mascota = generarMascotas();
-            await petsService.create(mascota);
+
+            const data = await petsService.create(mascota);
+            dataPet.push(data);
         }
-        res.send({ status: 'success' });
+        res.send({ status: 'success', pets: dataPet, users: dataUser });
     } catch (error) {
         next(error);
     }
